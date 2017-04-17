@@ -7,8 +7,10 @@ Known Limitations
 1. Maximum Adjacent Cut / Minimum Opposite Cut Specifications (MACS / MOCS) are not supported. 
 1. Duplicate keys are not tracked/excluded.
 
-** No guarantee is made to the accuracy of this calculation. This program is a hypothetical simulation, and not designed to assess any particular brand or model of real world lock/key system. To be used for entertainment purposes only. **
+**No guarantee is made to the accuracy of this calculation. This program is a hypothetical simulation, and not designed to assess any particular brand or model of real world lock/key system. To be used for entertainment purposes only.**
 
+Sample Output
+-------------
 Sample output values (10,000 test runs each):
 * 6 Pins / 6 Depths / 0 Buffer / Random Masters: 17.013
 * 6 Pins / 6 Depths / 1 Buffer / Random Masters: 10.439
