@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace keyProb
 {
@@ -6,7 +7,7 @@ namespace keyProb
     {
         private Random rnd;
         private int[] master;
-        int TestedKeys;
+        List<int[]> TestedKeys;
         private int Buffer;
         private int PinCount;
         private int Depths;
@@ -20,13 +21,13 @@ namespace keyProb
          *   depths - number of possible cut depths per pin
          *   buffer - number of pins disallowed around master. 0 means a pin wafer of size 1 is allowed. Must be >= 0.
          **/
-        public KeyTest(int pinCount, int depths, int buffer)
+        public KeyTest(int pinCount, int depths, int buffer, Random random)
         {
-            rnd = new Random();
+            rnd = random;
             PinCount = pinCount;
             Depths = depths;
             Buffer = buffer;
-            TestedKeys = 0;
+            TestedKeys = new List<int[]>();
             GenerateMaster();
             BuildTestMap();
         }
@@ -40,13 +41,13 @@ namespace keyProb
          *   buffer - number of pins disallowed around master. 0 means a pin wafer of size 1 is allowed. Must be >= 0.
          *   masterKey - if you want to test against a specific master key, instead of a randomly generated one, provide one here. 
          **/
-        public KeyTest(int pinCount, int depths, int buffer, int[] masterKey)
+        public KeyTest(int pinCount, int depths, int buffer, int[] masterKey, Random random)
         {
-            rnd = new Random();
+            rnd = random;
             PinCount = pinCount;
             Depths = depths;
             Buffer = buffer;
-            TestedKeys = 0;
+            TestedKeys = new List<int[]>();
             master = masterKey;
             BuildTestMap();
         }
@@ -143,9 +144,11 @@ namespace keyProb
             {
                 AddKey(GenerateValidKey());
             } while (!checkFinished());
-            Console.WriteLine("Done in {0} keys.", TestedKeys);
+            Console.WriteLine("Done in {0} keys.", TestedKeys.Count);
             Console.WriteLine();
-            return TestedKeys;
+            int ret = TestedKeys.Count;
+            TestedKeys.Clear();
+            return ret;
         }
 
         //Create a new operator key. Key must not have any pins equal to master, nor any +/- buffer from master.
@@ -153,24 +156,51 @@ namespace keyProb
         {
             int[] key = new int[PinCount];
 
-            for (int i = 0; i < PinCount; i++)
-            {
-                do
+            do {
+                for (int i = 0; i < PinCount; i++)
                 {
-                    key[i] = rnd.Next(Depths);
-                } while (!isValid(i, key[i]));
-            }
+                    do
+                    {
+                        key[i] = rnd.Next(Depths);
+                    } while (!isValid(i, key[i]));
+                }
+            } while (!unique(key));
 
-            Console.Write("Key" + TestedKeys + ": \t");
+            Console.Write("Key" + TestedKeys.Count + ": \t");
             for(int i=0; i<PinCount; i++)
             {
                 Console.Write(key[i] + " ");
             }
             Console.WriteLine();
 
-            TestedKeys++;
+            TestedKeys.Add(key);
 
             return key;
+        }
+
+        //Check if the current key has been already tested
+        private bool unique(int[] key)
+        {
+            foreach (int[] testedKey in TestedKeys)
+            {
+                bool dup = true;
+                for (int i = 0; i < testedKey.Length; i++)
+                {
+                    if (key[i] != testedKey[i])
+                    {
+                        dup = false;
+                        break;
+                    }
+                }
+
+                if (dup)    //Key matched an existing key on each pin. Not unique.
+                {
+                    return false;
+                }
+            }
+
+            //Made it through all keys with no matches. It is unique.
+            return true;
         }
 
         //Check if a given pin value is too close to the master value
