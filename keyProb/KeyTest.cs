@@ -62,7 +62,6 @@ namespace keyProb
                 Console.Write(master[i] + " ");
             }
             Console.WriteLine();
-            Console.WriteLine();
         }
 
         // Creates a boolean 2D array of size pin count x depths. 
@@ -144,8 +143,8 @@ namespace keyProb
             {
                 AddKey(GenerateValidKey());
             } while (!checkFinished());
-            Console.WriteLine();
             Console.WriteLine("Done in {0} keys.", TestedKeys);
+            Console.WriteLine();
             return TestedKeys;
         }
 
@@ -177,14 +176,17 @@ namespace keyProb
         //Check if a given pin value is too close to the master value
         private bool isValid(int pos, int val)
         {
-            if (master[pos] == val)
-                return false;
+            //if (master[pos] == val)
+                //return false;
 
-            if (master[pos] == (val + Buffer))
-                return false;
+            for (int i = 0; i <= Buffer; i++)
+            {
+                if (master[pos] == (val + i))
+                    return false;
 
-            if (master[pos] == (val - Buffer))
-                return false;
+                if (master[pos] == (val - i))
+                    return false;
+            }
 
             return true;
         }
