@@ -6,6 +6,7 @@ Known Limitations
 1. The simulation only considers a basic lock system with one operator key and one master key. Things like multi-level-masters or multiple shear lines are not supported.
 1. Maximum Adjacent Cut / Minimum Opposite Cut Specifications (MACS / MOCS) are not supported. 
 1. Duplicate keys are not tracked/excluded.
+1. There is no input validation on the variables to KeyTest. Program assumes you provide sane values. 
 
 **No guarantee is made to the accuracy of this calculation. This program is a hypothetical simulation, and not designed to assess any particular brand or model of real world lock/key system. To be used for entertainment purposes only.**
 
