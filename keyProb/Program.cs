@@ -7,10 +7,11 @@ namespace keyProb
     {
         static void Main(string[] args)
         {
-            int tests = 10000;  //How many tests to run
-            int pinPositions = 7; //How many key stacks in this lock
+            int tests = 1000;  //How many tests to run
+            int pinPositions = 7; //How many pin stacks in this lock
             int depths = 6; //How many possible cut depths per pin.
             int buffer = 0; //How many cuts on either side of master are illegal. (E.g. disallow pin 'wafers' of this size).
+            int macs = depths-2;    //Adjacent cuts cannot be more than this far off from each other's depths. Set equal to depths to allow any adjacent cut.
 
             //Create a specific master key set to all 0's.
             int[] m = new int[pinPositions];
@@ -18,7 +19,7 @@ namespace keyProb
                 m[i] = 0;
 
 
-            Random r = new Random();    //Pass in random so we don't keep regenerate it each test run, which can lead to issues with the random values.
+            Random r = new Random();    //Pass in random so we don't keep regenerating it each test run, which can lead to issues with the random values.
             double min = Double.MaxValue;
             double max = 0;
             double total=0;
@@ -26,8 +27,8 @@ namespace keyProb
             Stopwatch stopwatch = Stopwatch.StartNew();
             for (int tries = 0; tries < tests; tries++)
             {
-                KeyTest k = new KeyTest(pinPositions, depths, buffer, r);
-                //KeyTest k = new KeyTest(pinPositions, depths, buffer, m, r); // Optionally, provide a fixed master to test
+                KeyTest k = new KeyTest(pinPositions, depths, buffer, macs, r);
+                //KeyTest k = new KeyTest(pinPositions, depths, buffer, macs, m, r); // Optionally, provide a fixed master to test
                 result = k.Simulation();
                 total += result;
                 if(min > result)

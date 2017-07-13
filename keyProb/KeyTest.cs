@@ -11,6 +11,7 @@ namespace keyProb
         private int Buffer;
         private int PinCount;
         private int Depths;
+        private int MACS;
         bool[,] testMap;
 
         /**
@@ -21,12 +22,13 @@ namespace keyProb
          *   depths - number of possible cut depths per pin
          *   buffer - number of pins disallowed around master. 0 means a pin wafer of size 1 is allowed. Must be >= 0.
          **/
-        public KeyTest(int pinCount, int depths, int buffer, Random random)
+        public KeyTest(int pinCount, int depths, int buffer, int macs, Random random)
         {
             rnd = random;
             PinCount = pinCount;
             Depths = depths;
             Buffer = buffer;
+            MACS = macs;
             TestedKeys = new List<int[]>();
             GenerateMaster();
             BuildTestMap();
@@ -41,12 +43,13 @@ namespace keyProb
          *   buffer - number of pins disallowed around master. 0 means a pin wafer of size 1 is allowed. Must be >= 0.
          *   masterKey - if you want to test against a specific master key, instead of a randomly generated one, provide one here. 
          **/
-        public KeyTest(int pinCount, int depths, int buffer, int[] masterKey, Random random)
+        public KeyTest(int pinCount, int depths, int buffer, int macs, int[] masterKey, Random random)
         {
             rnd = random;
             PinCount = pinCount;
             Depths = depths;
             Buffer = buffer;
+            MACS = macs;
             TestedKeys = new List<int[]>();
             master = masterKey;
             BuildTestMap();
@@ -59,7 +62,9 @@ namespace keyProb
             master = new int[PinCount];
             for (int i = 0; i < PinCount; i++)
             {
-                master[i] = rnd.Next(Depths);
+                do {
+                    master[i] = rnd.Next(Depths);
+                } while (!passesMACS(i, master));
                 Console.Write(master[i] + " ");
             }
             Console.WriteLine();
@@ -162,7 +167,7 @@ namespace keyProb
                     do
                     {
                         key[i] = rnd.Next(Depths);
-                    } while (!isValid(i, key[i]));
+                    } while (!isValid(i, key));
                 }
             } while (!unique(key));
 
@@ -203,22 +208,43 @@ namespace keyProb
             return true;
         }
 
+        private bool passesMACS(int pos, int[] key)
+        {
+            if (pos > 0)
+            {
+                if (key[pos - 1] > (key[pos] + MACS))
+                {
+                    //Console.WriteLine("MAC Fail: {0} > {1} + {2}", key[pos - 1], key[pos], MACS);
+                    return false;
+                }
+                else if (key[pos - 1] < (key[pos] - MACS))
+                {
+                    //Console.WriteLine("MAC Fail: {0} < {1} - {2}", key[pos - 1], key[pos], MACS);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         //Check if a given pin value is too close to the master value
-        private bool isValid(int pos, int val)
+        private bool isValid(int pos, int[] key)
         {
             //if (master[pos] == val)
                 //return false;
 
+            //BUFFER
             for (int i = 0; i <= Buffer; i++)
             {
-                if (master[pos] == (val + i))
+                if (master[pos] == (key[pos] + i))
                     return false;
 
-                if (master[pos] == (val - i))
+                if (master[pos] == (key[pos] - i))
                     return false;
             }
 
-            return true;
+            //MACS
+            return passesMACS(pos, key);
         }
     }
 }
